@@ -2,89 +2,25 @@
 
 const fs = require('fs')
 const argv = require('yargs').argv
+const { ncp } = require('ncp')
+const pify = require('pify')
 
-// const through = require('through2')
+const { config, deps, dest } = argv
+if (!dest) throw new Error(`invalid dest "${dest}`)
+const source = __dirname + '/app'
 
-// const DEPS_SLUG = 'DEPS_SLUG'
-const { config, deps } = argv
-const vizSrc = createVizualization({ config, deps })
-process.stdout.write(vizSrc)
+main()
 
-function createVizualization ({ config, deps }) {
+async function main () {
+  // copy app dir
+  await pify(cb => ncp(source, dest, cb))()
+  // add data-injection file
   const configContent = fs.readFileSync(config, 'utf8')
   const depsContent = fs.readFileSync(deps, 'utf8')
-  const htmlTemplate = fs.readFileSync(__dirname + '/indexTemplate.html', 'utf8')
-  const appContent = getAppContent()
-  const styleContent = getStyleContent()
-  const result = htmlTemplate
-    .replace('{{__CONFIG__}}', configContent)
-    .replace('{{__DEPS__}}', depsContent)
-    .replace('{{__APP__}}', appContent)
-    .replace('{{__STYLE__}}', styleContent)
-  return result
+  const dataInjectionContent = `
+  self.CONFIG = ${configContent};
+  self.DEPS = ${depsContent};
+  `
+  fs.writeFileSync(dest + '/data-injection.js', dataInjectionContent)
+  console.log(`generated viz in ${dest}`)
 }
-
-function getAppContent () {
-  return [
-    '/static/js/runtime~main.0cc40efe.js',
-    '/static/js/2.c0997759.chunk.js',
-    '/static/js/main.8d454f2e.chunk.js',
-  ]
-  .map(path => fs.readFileSync(__dirname + path, 'utf8'))
-  .join(';\n')
-}
-
-function getStyleContent () {
-  return [
-    '/static/css/main.69235527.chunk.css',
-  ]
-  .map(path => fs.readFileSync(__dirname + path, 'utf8'))
-  .join('\n')
-}
-
-// /*  export a Browserify plugin  */
-// module.exports = function (browserify, pluginOpts) {
-//   // setup the plugin in a re-bundle friendly way
-//   browserify.on('reset', setupPlugin)
-//   setupPlugin()
-
-//   // override browserify/browser-pack prelude
-//   function setupPlugin () {
-//     // watch all finalized modules
-//     const { path } = pluginOpts
-//     const aggregator = createModuleAggregator({ path })
-//     browserify.pipeline.splice('pack', 0, aggregator)
-//   }
-// }
-
-// function createModuleAggregator ({ path }) {
-//   const deps = {}
-//   return createSpyStream((entry) => {
-//     const copy = Object.assign({}, entry)
-//     delete copy.source
-//     deps[entry.id] = copy
-//   }), () => {
-//     writeVisualization({ path, deps })
-//   }
-// }
-
-// function writeVisualization ({ path, deps }) {
-//   const depsContent = JSON.stringify(deps, null, 2)
-//   const depsSrc = `
-// self.SESIFY_VIZ_DEPS = self.SESIFY_VIZ_DEPS || [];
-// self.SESIFY_VIZ_DEPS.push(${depsContent});
-// `
-//   const result = HTML_TEMPLATE.replace(DEPS_SLUG, depsSrc)
-//   fs.writeFileSync(path, 'utf8', result)
-// }
-
-// function createSpyStream (spyFn, flushFn) {
-//   return through((chunk, enc, cb) => {
-//     spyFn(chunk)
-//     // continue normally
-//     cb(null, chunk)
-//   }, (cb) => {
-//     flushFn()
-//     cb()
-//   })
-// }

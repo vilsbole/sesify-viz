@@ -4,11 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy-build": "rm -r ./src/app && cp -R ../metamask-deps-explorer-sesify/build ./src/app && node scripts/fixApp.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ncp": "^2.0.0",
+    "pify": "^4.0.1",
     "through2": "^3.0.1",
     "yargs": "^13.3.0"
   },
