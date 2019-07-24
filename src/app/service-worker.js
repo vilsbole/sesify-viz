@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/metamask-deps-explorer-sesify/precache-manifest.1120dddc06cffabd53c38c4d367355c8.js"
+  "/metamask-deps-explorer-sesify/precache-manifest.81cddee6929f4ac3e2f8c7df7fbea8fb.js"
 );
 
 workbox.clientsClaim();
