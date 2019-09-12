@@ -6,7 +6,11 @@ const { ncp } = require('ncp')
 const pify = require('pify')
 
 const { config, deps, dest } = argv
-if (!dest) throw new Error(`invalid dest "${dest}`)
+
+if (!dest) throw new Error('missing cli argument "--dest')
+if (!deps) throw new Error('missing cli argument "--deps')
+if (!config) throw new Error('missing cli argument "--config')
+
 const source = __dirname + '/app'
 
 main()
